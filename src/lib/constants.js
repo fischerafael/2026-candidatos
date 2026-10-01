@@ -29,16 +29,17 @@ export const SHORT = {
   'Deputado estadual': 'Dep. estadual',
   'Deputado federal': 'Dep. federal',
   'Deputado distrital': 'Dep. distrital',
+  'Mais de R$ 50 milhões': 'Mais de R$ 50 mi',
 };
 
 // Facetas que dependem de arquivos opcionais (patrim, bens) só aparecem se os dados existirem.
-// type: lista (padrão) | uf | chips | search | age
+// type: lista (padrão) | uf | chips | search | age | wealth (lista + faixa livre)
 export const FACETS = [
   { k: 'cargo', label: 'Cargo', open: true },
   { k: 'uf', label: 'Estado', open: true, type: 'uf' },
   { k: 'partido', label: 'Partido', open: true, type: 'chips', sortByCount: true },
   { k: 'espectro', label: 'Espectro do partido', open: true, type: 'ideology' },
-  { k: 'patrim', label: 'Patrimônio declarado', note: WEALTH_NOTE },
+  { k: 'patrim', label: 'Patrimônio declarado', type: 'wealth', note: WEALTH_NOTE },
   { k: 'bens', label: 'Declarou ter', note: 'Marcando mais de uma opção, aparece quem tem qualquer uma delas.' },
   { k: 'fed', label: 'Federação' },
   { k: 'genero', label: 'Gênero' },

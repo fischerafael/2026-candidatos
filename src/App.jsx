@@ -36,6 +36,8 @@ function Explorer({ data }) {
   const [sel, setSel] = useState(init.sel);
   const [amin, setAmin] = useState(init.amin);
   const [amax, setAmax] = useState(init.amax);
+  const [wmin, setWmin] = useState(init.wmin);
+  const [wmax, setWmax] = useState(init.wmax);
   const [sort, setSort] = useState(init.sort);
   const [onlyPhoto, setOnlyPhoto] = useState(init.onlyPhoto);
   const [view, setView] = useState(init.view);
@@ -47,14 +49,14 @@ function Explorer({ data }) {
   const dq = useDeferredValue(q);
   const dsel = useDeferredValue(sel);
 
-  useEffect(() => writeHash(data, { q: dq, sel: dsel, amin, amax, sort, onlyPhoto, view }),
-    [data, dq, dsel, amin, amax, sort, onlyPhoto, view]);
-  useEffect(() => setLimit(PAGE_SIZE), [dq, dsel, amin, amax, sort, onlyPhoto]);
+  useEffect(() => writeHash(data, { q: dq, sel: dsel, amin, amax, wmin, wmax, sort, onlyPhoto, view }),
+    [data, dq, dsel, amin, amax, wmin, wmax, sort, onlyPhoto, view]);
+  useEffect(() => setLimit(PAGE_SIZE), [dq, dsel, amin, amax, wmin, wmax, sort, onlyPhoto]);
   useEffect(() => {
     document.body.style.overflow = openPos !== null || sheetOpen ? 'hidden' : '';
   }, [openPos, sheetOpen]);
 
-  const { ids, counts, ageCounts } = useFilteredData(data, { q: dq, sel: dsel, amin, amax, onlyPhoto });
+  const { ids, counts, ageCounts } = useFilteredData(data, { q: dq, sel: dsel, amin, amax, wmin, wmax, onlyPhoto });
   const sorted = useSorted(data, ids, sort);
 
   const toggle = useCallback((k, i) => {
@@ -68,10 +70,11 @@ function Explorer({ data }) {
     });
   }, []);
   const setAge = useCallback((a, b) => { setAmin(a); setAmax(b); }, []);
-  const clearAll = useCallback(() => { setSel({}); setQ(''); setAge('', ''); }, [setAge]);
+  const setWealth = useCallback((a, b) => { setWmin(a); setWmax(b); }, []);
+  const clearAll = useCallback(() => { setSel({}); setQ(''); setAge('', ''); setWealth('', ''); }, [setAge, setWealth]);
 
   const nActive = Object.values(sel).reduce((s, v) => s + v.length, 0)
-    + (amin !== '' || amax !== '' ? 1 : 0) + (q ? 1 : 0);
+    + (amin !== '' || amax !== '' ? 1 : 0) + (wmin !== '' || wmax !== '' ? 1 : 0) + (q ? 1 : 0);
 
   return (
     <>
@@ -81,10 +84,11 @@ function Explorer({ data }) {
         <div className="layout">
           <Filters open={sheetOpen} sel={sel} counts={counts} toggle={toggle}
             amin={amin} amax={amax} setAmin={setAmin} setAmax={setAmax} setAge={setAge}
+            wmin={wmin} wmax={wmax} setWmin={setWmin} setWmax={setWmax}
             clearAll={clearAll} nActive={nActive} />
           <main>
             <ActiveTags sel={sel} toggle={toggle} q={q} setQ={setQ} amin={amin} amax={amax}
-              setAge={setAge} clearAll={clearAll} nActive={nActive} />
+              setAge={setAge} wmin={wmin} wmax={wmax} setWealth={setWealth} clearAll={clearAll} nActive={nActive} />
             <Overview counts={counts} ageCounts={ageCounts} sel={sel} toggle={toggle}
               amin={amin} amax={amax} setAge={setAge} />
             <ResultList sorted={sorted} limit={limit} setLimit={setLimit} sort={sort} setSort={setSort}

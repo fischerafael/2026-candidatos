@@ -1,5 +1,6 @@
 import { FACET_LABEL, UF_NAME } from '../lib/constants.js';
 import { useData } from '../lib/data.js';
+import { wealthRangeLabel } from '../lib/patrimonio.js';
 import { CloseIcon } from './Icons.jsx';
 
 function Tag({ name, value, onRemove }) {
@@ -11,7 +12,7 @@ function Tag({ name, value, onRemove }) {
   );
 }
 
-export default function ActiveTags({ sel, toggle, q, setQ, amin, amax, setAge, clearAll, nActive }) {
+export default function ActiveTags({ sel, toggle, q, setQ, amin, amax, setAge, wmin, wmax, setWealth, clearAll, nActive }) {
   const data = useData();
   if (!nActive) return <div className="active" />;
   return (
@@ -24,6 +25,9 @@ export default function ActiveTags({ sel, toggle, q, setQ, amin, amax, setAge, c
       }))}
       {(amin !== '' || amax !== '') && (
         <Tag name="Idade" value={`${amin || '18'}${amax ? `–${amax}` : '+'}`} onRemove={() => setAge('', '')} />
+      )}
+      {(wmin !== '' || wmax !== '') && (
+        <Tag name="Patrimônio" value={wealthRangeLabel(wmin, wmax)} onRemove={() => setWealth('', '')} />
       )}
       <button className="linkbtn" onClick={clearAll} style={{ marginLeft: 4 }}>Limpar tudo</button>
     </div>

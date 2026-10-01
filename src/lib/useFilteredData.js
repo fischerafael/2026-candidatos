@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { AGE_BUCKETS } from './constants.js';
 import { norm } from './format.js';
+import { parseMoney } from './patrimonio.js';
 
 const bucketOf = (age) => AGE_BUCKETS.findIndex(([a, b]) => age >= a && age <= b);
 
@@ -12,10 +13,11 @@ const bucketOf = (age) => AGE_BUCKETS.findIndex(([a, b]) => age >= a && age <= b
  * e soma em todas as categorias; se falha em exatamente 1, soma só nessa categoria.
  * Categorias em data.multi (ex.: tipos de bem) guardam uma máscara de bits por linha: a linha
  * passa se tiver qualquer uma das opções marcadas e soma em todas as opções que tiver.
+ * Idade e faixa livre de patrimônio são filtros de intervalo: contam como uma categoria cada.
  */
-export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
+export function useFilteredData(data, { q, sel, amin, amax, wmin, wmax, onlyPhoto }) {
   return useMemo(() => {
-    const { rows, keys, dicts, fi, search, photos, multi } = data;
+    const { rows, keys, dicts, fi, search, photos, multi, wealth } = data;
     const needPhoto = onlyPhoto && photos.size > 0;
     const terms = norm(q.trim()).split(/\s+/).filter(Boolean);
     const active = keys.filter((k) => sel[k]?.length).map((k) => ({
@@ -24,6 +26,8 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
     const lo = amin === '' ? -Infinity : Number(amin);
     const hi = amax === '' ? Infinity : Number(amax);
     const ageOn = amin !== '' || amax !== '';
+    const [wlo, whi] = wealthRange(wmin, wmax);
+    const wealthOn = !!wealth && (wlo > -Infinity || whi < Infinity);
 
     const counts = Object.fromEntries(keys.map((k) => [k, new Uint32Array(dicts[k].length)]));
     const ageCounts = new Uint32Array(AGE_BUCKETS.length);
@@ -48,9 +52,12 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
 
       const age = row[4];
       const ageFail = ageOn && (age < lo || age > hi);
-      if (fails === 1 && ageFail) continue;
+      const w = wealthOn ? wealth[r]?.[0] : 0;
+      const wealthFail = wealthOn && !(w >= wlo && w <= whi);
+      if (fails + ageFail + wealthFail > 1) continue;
 
       if (fails === 0) {
+        if (wealthFail) continue;
         const b = bucketOf(age);
         if (b >= 0) ageCounts[b]++;
         if (ageFail) continue;
@@ -61,7 +68,14 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
       }
     }
     return { ids, counts, ageCounts };
-  }, [data, q, sel, amin, amax, onlyPhoto]);
+  }, [data, q, sel, amin, amax, wmin, wmax, onlyPhoto]);
+}
+
+// Limites da faixa livre de patrimônio; valor vazio ou inválido não limita
+export function wealthRange(wmin, wmax) {
+  const a = parseMoney(wmin);
+  const b = parseMoney(wmax);
+  return [Number.isFinite(a) ? a : -Infinity, Number.isFinite(b) ? b : Infinity];
 }
 
 export function useSorted(data, ids, sort) {

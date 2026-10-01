@@ -3,10 +3,14 @@ import { AGE_PRESETS, UF_NAME } from '../lib/constants.js';
 import { orderOf, useData } from '../lib/data.js';
 import { fmt, norm } from '../lib/format.js';
 import { IDEOLOGY_SOURCE, scoreLabel } from '../lib/ideology.js';
+import { parseMoney } from '../lib/patrimonio.js';
 
-export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, setAmax, setAge }) {
+export default function Facet({
+  f, sel, counts, toggle, amin, amax, setAmin, setAmax, setAge, wmin, wmax, setWmin, setWmax,
+}) {
   const data = useData();
-  const n = f.type === 'age' ? (amin !== '' || amax !== '' ? 1 : 0) : sel.length;
+  const n = f.type === 'age' ? (amin !== '' || amax !== '' ? 1 : 0)
+    : sel.length + (f.type === 'wealth' && (wmin !== '' || wmax !== '') ? 1 : 0);
 
   let body;
   if (f.type === 'age') {
@@ -31,6 +35,9 @@ export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, set
       );
     } else {
       body = <CheckboxList f={f} idx={idx} d={d} sel={sel} counts={counts} toggle={toggle} />;
+    }
+    if (f.type === 'wealth') {
+      body = <>{body}<WealthRange wmin={wmin} wmax={wmax} setWmin={setWmin} setWmax={setWmax} /></>;
     }
     if (f.note) {
       body = <>{body}<p className="fnote">{f.note}</p></>;
@@ -114,5 +121,25 @@ function AgeRange({ amin, amax, setAmin, setAmax, setAge }) {
         })}
       </div>
     </>
+  );
+}
+
+// Faixa livre de patrimônio: aceita "500 mil", "1,5 mi", "250.000" etc. (ver parseMoney)
+function WealthRange({ wmin, wmax, setWmin, setWmax }) {
+  const bad = (v) => Number.isNaN(parseMoney(v));
+  return (
+    <div className="wealth-range">
+      <div className="range">
+        <label>De
+          <input type="text" inputMode="text" value={wmin} placeholder="R$ 0" aria-invalid={bad(wmin)}
+            onChange={(e) => setWmin(e.target.value)} />
+        </label>
+        <label>Até
+          <input type="text" inputMode="text" value={wmax} placeholder="sem limite" aria-invalid={bad(wmax)}
+            onChange={(e) => setWmax(e.target.value)} />
+        </label>
+      </div>
+      <p className="fnote">Faixa livre: digite valores como 500 mil, 1,5 mi ou 250.000. Esconde quem não declarou.</p>
+    </div>
   );
 }
