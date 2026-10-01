@@ -10,6 +10,7 @@ import ActiveTags from './components/ActiveTags.jsx';
 import Overview from './components/Overview.jsx';
 import ResultList from './components/ResultList.jsx';
 import CandidateDrawer from './components/CandidateDrawer.jsx';
+import Footer from './components/Footer.jsx';
 
 export default function App() {
   const { status, data, error } = useCandidatosData();
@@ -89,11 +90,9 @@ function Explorer({ data }) {
             <ResultList sorted={sorted} limit={limit} setLimit={setLimit} sort={sort} setSort={setSort}
               onOpen={setOpenPos} clearAll={clearAll} view={view} setView={setView}
               onlyPhoto={onlyPhoto} setOnlyPhoto={setOnlyPhoto} hasPhotos={data.photos.size > 0} />
-            <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 24 }}>
-              Fonte: TSE, consulta de candidatos 2026 (arquivo gerado em {data.gen}). Idade calculada na data da eleição.
-            </p>
           </main>
         </div>
+        <Footer />
       </div>
       {sheetOpen && (
         <div className="sheetbar">

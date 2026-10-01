@@ -41,8 +41,8 @@ export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, set
           {body}
           <p className="fnote">
             Posição do partido, não do candidato, numa escala de 0 (esquerda) a 10 (direita).
-            Fonte: <a href={IDEOLOGY_SOURCE.url} target="_blank" rel="noreferrer">{IDEOLOGY_SOURCE.label}</a>,
-            com ajuste editorial em PSOL e Missão.
+            Fonte: <a href={IDEOLOGY_SOURCE.url} target="_blank" rel="noreferrer">{IDEOLOGY_SOURCE.label}</a>.
+            Critérios completos no rodapé da página.
           </p>
         </>
       );

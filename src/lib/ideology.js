@@ -44,26 +44,19 @@ export const PARTY_SCORE = {
   // MISSÃO: criado depois do survey, sem nota
 };
 
-// Ajustes editoriais do projeto: a faixa abaixo prevalece sobre a calculada pela nota do survey
-export const BAND_OVERRIDE = {
-  PSOL: 'Esquerda', // 1,41 no survey cairia em extrema esquerda
-  MISSÃO: 'Extrema direita', // sem nota no survey
-};
-
-// Faixas definidas no artigo
+// Faixas do projeto: as sete faixas do artigo agrupadas em quatro, com corte no meio da escala (5).
+// Esquerda junta extrema esquerda e esquerda (até 3); centro-esquerda vai de 3 a 5 e centro-direita
+// de 5 a 7 (a faixa "centro" do artigo, de 4,5 a 5,5, está vazia); direita junta direita e extrema
+// direita (acima de 7). Não há ajuste manual: a faixa sai só da nota do survey.
 export const BANDS = [
-  [1.5, 'Extrema esquerda'],
   [3, 'Esquerda'],
-  [4.49, 'Centro-esquerda'],
-  [5.5, 'Centro'],
+  [5, 'Centro-esquerda'],
   [7, 'Centro-direita'],
-  [8.5, 'Direita'],
-  [10, 'Extrema direita'],
+  [10, 'Direita'],
 ];
 export const NO_BAND = 'Sem classificação';
 
 export const bandOf = (sg) => {
-  if (BAND_OVERRIDE[sg]) return BAND_OVERRIDE[sg];
   const s = PARTY_SCORE[sg];
   return s === undefined ? NO_BAND : BANDS.find(([max]) => s <= max)[1];
 };
@@ -72,8 +65,13 @@ const fmtScore = (s) => s.toFixed(2).replace('.', ',');
 
 export const scoreLabel = (sg) => {
   const s = PARTY_SCORE[sg];
-  if (BAND_OVERRIDE[sg]) {
-    return `${bandOf(sg)} (ajuste editorial${s === undefined ? '' : `; survey: ${fmtScore(s)}`})`;
-  }
-  return s === undefined ? NO_BAND : `${bandOf(sg)} (${fmtScore(s)})`;
+  return s === undefined ? `${NO_BAND} (partido fora do survey)` : `${bandOf(sg)} (${fmtScore(s)})`;
 };
+
+// Partidos de cada faixa, do mais à esquerda para o mais à direita (usado no rodapé)
+export const partiesByBand = () => BANDS.map(([max, label], i) => ({
+  label,
+  min: i ? BANDS[i - 1][0] : 0,
+  max,
+  parties: Object.keys(PARTY_SCORE).filter((sg) => bandOf(sg) === label),
+}));

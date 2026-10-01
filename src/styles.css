@@ -238,3 +238,24 @@ main{min-width:0}
 .card-top{min-width:0}
 .card-top .pill{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .card-num{flex:none}
+
+/* ---- rodapé */
+.site-footer{margin:40px 0 24px;padding:28px 0 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px;line-height:1.55;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px 40px}
+.site-footer h2{color:var(--ink);font-size:15px;margin:0 0 8px}
+.site-footer p,.site-footer ul{margin:0 0 10px}
+.site-footer ul{padding-left:18px}
+.site-footer li{margin-bottom:6px}
+.site-footer b{color:var(--ink)}
+.site-footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.site-footer .fine{grid-column:1/-1;font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+.bands{width:100%;border-collapse:collapse;margin:4px 0 12px;font-size:13px}
+.bands th,.bands td{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--line)}
+.bands th{color:var(--ink);font-weight:700}
+.bands td:first-child{color:var(--ink);font-weight:700;white-space:nowrap}
+.bands .num{white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:600px){
+  .bands thead{display:none}
+  .bands tr{display:block;padding:8px 0;border-bottom:1px solid var(--line)}
+  .bands td{display:block;border:0;padding:1px 0}
+  .bands .num{white-space:normal}
+}
