@@ -1,0 +1,102 @@
+import { useState } from 'react';
+import { AGE_PRESETS, UF_NAME } from '../lib/constants.js';
+import { orderOf, useData } from '../lib/data.js';
+import { fmt, norm } from '../lib/format.js';
+
+export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, setAmax, setAge }) {
+  const data = useData();
+  const n = f.type === 'age' ? (amin !== '' || amax !== '' ? 1 : 0) : sel.length;
+
+  let body;
+  if (f.type === 'age') {
+    body = <AgeRange amin={amin} amax={amax} setAmin={setAmin} setAmax={setAmax} setAge={setAge} />;
+  } else {
+    const d = data.dicts[f.k];
+    let idx = orderOf(data, f.k);
+    if (f.sortByCount) idx = idx.slice().sort((a, b) => counts[b] - counts[a] || d[a].localeCompare(d[b]));
+    if (f.type === 'uf' || f.type === 'chips') {
+      body = (
+        <div className={f.type === 'uf' ? 'grid-uf' : 'chips-wrap'}>
+          {idx.map((i) => (
+            <button key={i} className="chip"
+              title={f.type === 'uf' ? UF_NAME[d[i]] : data.party[d[i]] || d[i]}
+              aria-pressed={sel.includes(i)}
+              disabled={!counts[i] && !sel.includes(i)}
+              onClick={() => toggle(f.k, i)}>
+              {d[i]}<small>{fmt(counts[i])}</small>
+            </button>
+          ))}
+        </div>
+      );
+    } else {
+      body = <CheckboxList f={f} idx={idx} d={d} sel={sel} counts={counts} toggle={toggle} />;
+    }
+  }
+
+  return (
+    <details className="fs" open={f.open || n > 0}>
+      <summary><span>{f.label}{n > 0 && <span className="n">{n}</span>}</span></summary>
+      <div className="fbody">{body}</div>
+    </details>
+  );
+}
+
+function CheckboxList({ f, idx, d, sel, counts, toggle }) {
+  const [all, setAll] = useState(false);
+  const [fq, setFq] = useState('');
+  const label = (i) => (f.k === 'ufnasc' ? UF_NAME[d[i]] || d[i] : d[i]);
+
+  let shown = idx;
+  if (f.type === 'search') {
+    const t = norm(fq.trim());
+    if (t) shown = idx.filter((i) => norm(label(i)).includes(t) || norm(d[i]).includes(t));
+    shown = [...shown.filter((i) => sel.includes(i)), ...shown.filter((i) => !sel.includes(i))];
+  }
+  const cap = f.type === 'search' && !all && !fq ? 8 : Infinity;
+
+  return (
+    <>
+      {f.type === 'search' && (
+        <input className="mini-search" value={fq} onChange={(e) => setFq(e.target.value)}
+          placeholder={f.k === 'ocup' ? 'Buscar ocupação' : 'Buscar estado'} aria-label={`Buscar em ${f.label}`} />
+      )}
+      {shown.slice(0, cap).map((i) => (
+        <label key={i} className={`opt${!counts[i] && !sel.includes(i) ? ' zero' : ''}`}>
+          <input type="checkbox" checked={sel.includes(i)} onChange={() => toggle(f.k, i)} />
+          <span className="lbl">{label(i)}</span>
+          <span className="c">{fmt(counts[i])}</span>
+        </label>
+      ))}
+      {shown.length > cap && <button className="more" onClick={() => setAll(true)}>Ver todas ({shown.length})</button>}
+      {f.type === 'search' && shown.length === 0 && (
+        <div style={{ color: 'var(--muted)', fontSize: 13 }}>Nada encontrado.</div>
+      )}
+    </>
+  );
+}
+
+function AgeRange({ amin, amax, setAmin, setAmax, setAge }) {
+  return (
+    <>
+      <div className="range">
+        <label>Mínima
+          <input type="number" inputMode="numeric" min="18" max="100" value={amin} placeholder="18"
+            onChange={(e) => setAmin(e.target.value)} />
+        </label>
+        <label>Máxima
+          <input type="number" inputMode="numeric" min="18" max="100" value={amax} placeholder="92"
+            onChange={(e) => setAmax(e.target.value)} />
+        </label>
+      </div>
+      <div className="presets">
+        {AGE_PRESETS.map(([a, b, l]) => {
+          const on = String(a) === amin && String(b) === amax;
+          return (
+            <button key={l} className="chip" aria-pressed={on}
+              onClick={() => (on ? setAge('', '') : setAge(String(a), String(b)))}>{l}</button>
+          );
+        })}
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+*.csv
+.cache
+.DS_Store
+
+# Fotos são baixadas do TSE no build (npm run fotos -- all), não versionadas
+public/fotos

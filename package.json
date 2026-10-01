@@ -1,0 +1,23 @@
+{
+  "name": "candidatos-2026",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare-data": "node scripts/prepare-data.mjs",
+    "fotos": "node scripts/fetch-photos.mjs",
+    "build:vercel": "npm run fotos -- all || echo 'Aviso: fotos do TSE incompletas, seguindo o build'; vite build"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "adm-zip": "^0.5.16",
+    "vite": "^5.4.11"
+  }
+}
