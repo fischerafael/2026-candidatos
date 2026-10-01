@@ -6,3 +6,7 @@ dist
 
 # Fotos são baixadas do TSE no build (npm run fotos -- all), não versionadas
 public/fotos
+
+# Variáveis locais (ex.: VITE_POSTHOG_KEY)
+.env.local
+.env.*.local

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { COL, UF_NAME } from '../lib/constants.js';
 import { useData } from '../lib/data.js';
+import { track } from '../lib/track.js';
 import { fmt, norm } from '../lib/format.js';
 import { scoreLabel } from '../lib/ideology.js';
 import Bens from './Bens.jsx';
@@ -16,6 +17,9 @@ export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext
   const closeRef = useRef(null);
 
   useEffect(() => { closeRef.current?.focus(); }, []);
+  useEffect(() => {
+    track('ficha_aberta', { cargo: g('cargo'), partido: g('partido'), uf: g('uf') });
+  }, [r]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();

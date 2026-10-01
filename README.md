@@ -114,6 +114,15 @@ Se preferir não colocar isso junto do site, suba o conteúdo de `public/fotos/`
 
 As fotos são dados abertos do TSE (licença CC-BY), então mantenha a atribuição da fonte.
 
+## Analytics
+
+- **Vercel Web Analytics**: já incluído (`@vercel/analytics`). Basta ativar Analytics no painel do projeto na Vercel.
+- **PostHog**: opcional. Defina `VITE_POSTHOG_KEY` (a chave `phc_…` do projeto) e, se o projeto for na
+  região da Europa, `VITE_POSTHOG_HOST=https://eu.i.posthog.com`. Na Vercel, em Settings → Environment
+  Variables; localmente, num `.env.local`. Sem a chave nada é carregado. A biblioteca é baixada à parte,
+  depois do app. Além de pageviews e cliques (automáticos), o app envia o evento `ficha_aberta`
+  com cargo, partido e UF do candidato.
+
 ## Publicando
 
 ```bash
