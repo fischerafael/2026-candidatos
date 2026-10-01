@@ -6,6 +6,7 @@ import { scoreLabel } from '../lib/ideology.js';
 import Bens from './Bens.jsx';
 import Digits from './Digits.jsx';
 import Photo from './Photo.jsx';
+import Redes from './Redes.jsx';
 
 // Ficha do candidato, inspirada na tela e no teclado da urna eletrônica
 export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext }) {
@@ -74,6 +75,7 @@ export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext
             </div>
             {row[COL.comp] && <div className="wide"><dt>Composição</dt><dd style={{ fontSize: 13 }}>{row[COL.comp]}</dd></div>}
           </dl>
+          <Redes sq={row[COL.sq]} uf={uf} />
           {wealth && (
             <>
               <hr />

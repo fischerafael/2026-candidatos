@@ -44,16 +44,17 @@ function loadPhotoIndex() {
     .catch(() => new Set());
 }
 
-// Lista de bens de um estado (public/data/bens/<UF>.json), baixada só quando alguém abre uma ficha
-const bensCache = new Map();
-export function loadBens(uf) {
-  if (!bensCache.has(uf)) {
-    bensCache.set(uf, fetch(`${DATA_BASE}bens/${uf}.json`).then((r) => {
+// Detalhes por estado (public/data/<dir>/<UF>.json: bens, redes), baixados só quando alguém abre uma ficha
+const ufCache = new Map();
+export function loadByUf(dir, uf) {
+  const key = `${dir}/${uf}`;
+  if (!ufCache.has(key)) {
+    ufCache.set(key, fetch(`${DATA_BASE}${key}.json`).then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
-    }).catch((e) => { bensCache.delete(uf); throw e; }));
+    }).catch((e) => { ufCache.delete(key); throw e; }));
   }
-  return bensCache.get(uf);
+  return ufCache.get(key);
 }
 
 function enrich(raw, photos, wealthJson) {

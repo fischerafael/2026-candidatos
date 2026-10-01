@@ -70,6 +70,23 @@ Imposto de Renda), e não o valor de mercado. Um terço dos candidatos não decl
 quer dizer que não tenha. Erros de digitação da declaração aparecem como estão no TSE. Nas
 descrições, números longos (CNPJ, CPF, conta, matrícula, CEP) são trocados por "•••".
 
+## Redes sociais
+
+As redes sociais declaradas ao TSE aparecem na ficha do candidato. Para atualizar:
+
+```bash
+npm run redes                # baixa rede_social_candidato_2026.zip do TSE (cache em .cache/)
+```
+
+Gera `public/data/redes/<UF>.json`, baixado só ao abrir uma ficha daquele estado. O TSE publica o
+link como texto livre (URL, `@usuario`, `INSTAGRAM: FULANO`…), e dois terços vêm em maiúsculas.
+O script (`scripts/fetch-redes.mjs`) reconhece a plataforma, tira os parâmetros de rastreamento,
+junta os repetidos e põe o @usuário em minúsculas, o que é seguro em Instagram, TikTok, YouTube,
+X, Threads, Kwai e Facebook. Ficam de fora os links que não dá para reconstruir com segurança:
+links com código que diferencia maiúsculas (como `facebook.com/share/…`) quando vieram em
+maiúsculas, `@usuario` sem indicação da plataforma, e grupos e telefones de WhatsApp/Telegram.
+Hoje são ~50 mil de 63 mil links, de ~17 mil candidatos.
+
 ## Fotos dos candidatos
 
 O TSE publica as fotos num zip por estado. O script baixa, extrai e renomeia cada foto
@@ -120,6 +137,7 @@ Gera a pasta `dist/`, que pode ir para qualquer hospedagem estática:
 scripts/prepare-data.mjs     CSV do TSE → public/data/candidatos.json
 scripts/fetch-photos.mjs     zips de fotos do TSE → public/fotos/
 scripts/fetch-bens.mjs       bens declarados (TSE) → public/data/patrimonio.json e public/data/bens/
+scripts/fetch-redes.mjs      redes sociais (TSE) → public/data/redes/
 scripts/lib/tse-csv.mjs      leitura dos CSVs do TSE, compartilhada pelos scripts
 src/App.jsx                  estado dos filtros e composição da página
 src/lib/constants.js         categorias, ordens, rótulos e posições das colunas

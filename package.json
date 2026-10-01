@@ -10,9 +10,11 @@
     "prepare-data": "node scripts/prepare-data.mjs",
     "fotos": "node scripts/fetch-photos.mjs",
     "bens": "node scripts/fetch-bens.mjs",
+    "redes": "node scripts/fetch-redes.mjs",
     "build:vercel": "npm run fotos -- all || echo 'Aviso: fotos do TSE incompletas, seguindo o build'; vite build"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

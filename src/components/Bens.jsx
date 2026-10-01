@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadBens } from '../lib/data.js';
+import { loadByUf } from '../lib/data.js';
 import { fmt } from '../lib/format.js';
 import { money, moneyFull, WEALTH_NOTE } from '../lib/patrimonio.js';
 
@@ -15,7 +15,7 @@ export default function Bens({ sq, uf, summary }) {
     let alive = true;
     setState({ items: null, tipos: null, error: false });
     setAll(false);
-    loadBens(uf)
+    loadByUf('bens', uf)
       .then((d) => alive && setState({ items: d.c[sq] || [], tipos: d.tipos, error: false }))
       .catch(() => alive && setState({ items: null, tipos: null, error: true }));
     return () => { alive = false; };
