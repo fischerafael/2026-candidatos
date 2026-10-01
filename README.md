@@ -29,6 +29,24 @@ npm run prepare-data -- caminho/para/consulta_cand_2026_BRASIL.csv
 O script lê o CSV (Latin-1, separado por `;`), normaliza os textos, calcula a idade na data
 da eleição e grava um JSON compacto. CPF, título de eleitor e e-mail não são incluídos.
 
+## Espectro ideológico dos partidos
+
+O filtro **Espectro do partido** classifica cada candidatura pela posição do seu partido na escala
+esquerda-direita (0 a 10), usando as médias da onda de 2022 do survey com cientistas políticos de
+Bolognesi, Ribeiro, Codato e Silva, ["O desaparecimento do centro ideológico no sistema partidário
+brasileiro"](https://doi.org/10.1590/1807-0191202531120), *Opinião Pública*, 2025. As faixas
+(extrema esquerda, esquerda, centro-esquerda, centro, centro-direita, direita, extrema direita) são
+as definidas no artigo. É a posição do partido, não do candidato.
+
+As notas ficam em `src/lib/ideology.js`. Partidos que mudaram depois de 2022 seguem a regra do
+artigo: troca de nome mantém a nota (PMN → Mobiliza, PMB → Democrata), fusão usa a média
+(PTB + Patriota → PRD) e incorporação mantém a nota de quem incorporou (Podemos/PSC,
+Solidariedade/PROS). Partidos criados depois do survey sem nota aparecem como "Sem classificação".
+
+Há também ajustes editoriais do projeto, em `BAND_OVERRIDE`, que prevalecem sobre a faixa do survey e
+são sinalizados na ficha do candidato: PSOL como esquerda (a nota 1,41 o colocaria em extrema
+esquerda) e Missão, que não está no survey, como extrema direita.
+
 ## Fotos dos candidatos
 
 O TSE publica as fotos num zip por estado. O script baixa, extrai e renomeia cada foto

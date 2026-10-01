@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { FACET_START, ORDER } from './constants.js';
 import { norm } from './format.js';
+import { BANDS, bandOf, NO_BAND } from './ideology.js';
 
 const DataContext = createContext(null);
 export const DataProvider = DataContext.Provider;
@@ -42,7 +43,19 @@ function enrich(raw, photos) {
   const fi = {};
   raw.keys.forEach((k, i) => { fi[k] = FACET_START + i; });
   const search = raw.rows.map((r) => norm(`${r[1]} ${r[2]} ${r[3]} ${r[0]}`));
-  return { ...raw, fi, search, photos };
+  const { keys, dicts } = addEspectro(raw, fi);
+  return { ...raw, keys, dicts, fi, search, photos };
+}
+
+// Faceta derivada do partido (ver ideology.js): vira uma coluna extra no fim de cada linha
+function addEspectro(raw, fi) {
+  const labels = [...BANDS.map(([, l]) => l), NO_BAND];
+  const pos = new Map(labels.map((l, i) => [l, i]));
+  const byParty = raw.dicts.partido.map((sg) => pos.get(bandOf(sg)));
+  const col = raw.rows[0]?.length ?? 0;
+  for (const r of raw.rows) r[col] = byParty[r[fi.partido]];
+  fi.espectro = col;
+  return { keys: [...raw.keys, 'espectro'], dicts: { ...raw.dicts, espectro: labels } };
 }
 
 // Índices de um dicionário na ordem de exibição (sem valores vazios)

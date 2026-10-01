@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { COL, UF_NAME } from '../lib/constants.js';
 import { useData } from '../lib/data.js';
 import { fmt, norm } from '../lib/format.js';
+import { scoreLabel } from '../lib/ideology.js';
 import Digits from './Digits.jsx';
 import Photo from './Photo.jsx';
 
@@ -51,6 +52,8 @@ export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext
                 <span style={{ fontWeight: 400, color: 'var(--muted)' }}> {fullParty}</span>
               )}
             </dd>
+            <dt>Espectro</dt>
+            <dd style={{ fontWeight: 400 }}>{scoreLabel(sg)} <span style={{ color: 'var(--muted)' }}>· posição do partido</span></dd>
             <dt>Disputa em</dt><dd>{uf === 'BR' ? 'Todo o Brasil' : UF_NAME[uf]}</dd>
           </dl>
           <hr />

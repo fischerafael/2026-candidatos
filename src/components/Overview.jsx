@@ -30,6 +30,7 @@ export default function Overview({ counts, ageCounts, sel, toggle, amin, amax, s
       <div className="charts">
         <Bars title="Cargo" items={items('cargo').filter((x) => x.v > 0 || x.on)} onClick={onFacet} />
         <Bars title="Partidos com mais candidaturas" items={items('partido', { byCount: true, top: 8 })} onClick={onFacet} />
+        <Bars title="Espectro do partido" items={items('espectro')} onClick={onFacet} />
         <Bars title="Gênero" items={items('genero')} onClick={onFacet} />
         <Bars title="Cor/raça" items={items('raca', { byCount: true })} onClick={onFacet} />
         <Bars title="Escolaridade" items={items('instr')} onClick={onFacet} />

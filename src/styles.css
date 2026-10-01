@@ -65,6 +65,8 @@ details.fs>summary::after{content:"";width:8px;height:8px;border-right:2px solid
 details.fs[open]>summary::after{transform:rotate(-135deg)}
 details.fs>summary>span{display:flex;align-items:center;flex:1}
 .fbody{padding:0 16px 14px}
+.fnote{margin:10px 0 0;font-size:12px;line-height:1.45;color:var(--muted)}
+.fnote a{color:inherit}
 .opt{display:flex;align-items:center;gap:10px;padding:5px 0;cursor:pointer;user-select:none}
 .opt input{accent-color:var(--go);width:17px;height:17px;margin:0;flex:none}
 .opt .lbl{flex:1;min-width:0}

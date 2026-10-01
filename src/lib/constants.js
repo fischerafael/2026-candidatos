@@ -34,6 +34,7 @@ export const FACETS = [
   { k: 'cargo', label: 'Cargo', open: true },
   { k: 'uf', label: 'Estado', open: true, type: 'uf' },
   { k: 'partido', label: 'Partido', open: true, type: 'chips', sortByCount: true },
+  { k: 'espectro', label: 'Espectro do partido', open: true, type: 'ideology' },
   { k: 'fed', label: 'Federação' },
   { k: 'genero', label: 'Gênero' },
   { k: 'raca', label: 'Cor/raça' },

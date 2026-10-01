@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AGE_PRESETS, UF_NAME } from '../lib/constants.js';
 import { orderOf, useData } from '../lib/data.js';
 import { fmt, norm } from '../lib/format.js';
+import { IDEOLOGY_SOURCE, scoreLabel } from '../lib/ideology.js';
 
 export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, setAmax, setAge }) {
   const data = useData();
@@ -19,7 +20,7 @@ export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, set
         <div className={f.type === 'uf' ? 'grid-uf' : 'chips-wrap'}>
           {idx.map((i) => (
             <button key={i} className="chip"
-              title={f.type === 'uf' ? UF_NAME[d[i]] : data.party[d[i]] || d[i]}
+              title={f.type === 'uf' ? UF_NAME[d[i]] : `${data.party[d[i]] || d[i]} · ${scoreLabel(d[i])}`}
               aria-pressed={sel.includes(i)}
               disabled={!counts[i] && !sel.includes(i)}
               onClick={() => toggle(f.k, i)}>
@@ -30,6 +31,18 @@ export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, set
       );
     } else {
       body = <CheckboxList f={f} idx={idx} d={d} sel={sel} counts={counts} toggle={toggle} />;
+    }
+    if (f.type === 'ideology') {
+      body = (
+        <>
+          {body}
+          <p className="fnote">
+            Posição do partido, não do candidato, numa escala de 0 (esquerda) a 10 (direita).
+            Fonte: <a href={IDEOLOGY_SOURCE.url} target="_blank" rel="noreferrer">{IDEOLOGY_SOURCE.label}</a>,
+            com ajuste editorial em PSOL e Missão.
+          </p>
+        </>
+      );
     }
   }
 
