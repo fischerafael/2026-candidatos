@@ -81,10 +81,10 @@ details.fs>summary>span{display:flex;align-items:center;flex:1}
 .chips-wrap{display:flex;flex-wrap:wrap;gap:5px}
 .chips-wrap .chip{padding:5px 9px;display:inline-flex;gap:6px;align-items:baseline}
 .chips-wrap .chip small{display:inline}
-.mini-search{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface-2);margin-bottom:8px}
+.mini-search{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface-2);margin-bottom:8px}
 .range{display:flex;gap:10px;align-items:center}
-.range label{flex:1;font-size:13px;color:var(--muted)}
-.range input{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface-2);font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.range label{flex:1;min-width:0;font-size:13px;color:var(--muted)}
+.range input{width:100%;box-sizing:border-box;min-width:0;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface-2);font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 .range input[aria-invalid="true"]{border-color:var(--fix)}
 .wealth-range{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
@@ -137,6 +137,7 @@ main{min-width:0}
 .empty h3{margin:0 0 6px;font-size:18px}
 .empty p{margin:0 0 16px;color:var(--muted)}
 .loadmore{display:flex;justify-content:center;padding:16px}
+.loadmore .btn{white-space:normal;text-align:center;justify-content:center;max-width:100%}
 
 /* urna drawer */
 .scrim{position:fixed;inset:0;background:rgba(10,15,12,.45);z-index:40;animation:fade .15s ease}
@@ -146,8 +147,10 @@ main{min-width:0}
 .screen{background:var(--screen);border:2px solid var(--urna-ink);border-radius:6px;padding:18px 20px;color:var(--ink)}
 .screen .lead{font-size:13px;color:var(--muted)}
 .screen .office{font-size:24px;font-weight:800;margin:2px 0 14px;letter-spacing:-.01em}
-.screen .num{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.screen .num .digits i{width:34px;height:46px;font-size:26px}
+/* número com até 5 dígitos (dep. estadual): os quadrados encolhem com a tela e o rótulo sobe se faltar espaço */
+.screen .num{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-bottom:12px}
+.screen .num .digits i{width:clamp(24px,7.5vw,34px);height:auto;aspect-ratio:34/46;font-size:clamp(18px,5.6vw,26px)}
+.screen-head>div{min-width:0}
 .kv{display:grid;grid-template-columns:7.5em 1fr;gap:4px 12px;margin:0}
 .kv dt{color:var(--muted);font-size:14px}
 .kv dd{margin:0;font-weight:700}
@@ -164,7 +167,7 @@ main{min-width:0}
 .redes a b{flex:none}
 .redes a span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .bens h3{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0;font-size:15px}
-.bens-total{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.bens-total{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bens-sub{font-size:12px;color:var(--muted);text-align:right}
 .bens-empty{margin:6px 0 0;color:var(--muted);font-size:14px}
 .bens-list{list-style:none;margin:10px 0 0;padding:0}
@@ -193,6 +196,8 @@ main{min-width:0}
   .row{grid-template-columns:minmax(0,1fr) auto;gap:10px}
   .row .digits{grid-column:1/-1}
   .row .digits i{width:19px;height:25px;font-size:14px}
+  /* abaixo de 16px o iOS dá zoom ao focar o campo */
+  .range input,.mini-search{font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .loading{min-height:60vh;display:grid;place-items:center;color:var(--muted);text-align:center;padding:24px}
