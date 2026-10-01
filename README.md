@@ -117,7 +117,7 @@ As fotos são dados abertos do TSE (licença CC-BY), então mantenha a atribuiç
 ## Analytics
 
 - **Vercel Web Analytics**: já incluído (`@vercel/analytics`). Basta ativar Analytics no painel do projeto na Vercel.
-- **PostHog**: opcional. Defina `VITE_POSTHOG_KEY` (a chave `phc_…` do projeto) e, se o projeto for na
+- **PostHog**: opcional. Defina `VITE_POSTHOG_KEY` ou `VITE_POSTHOG_PROJECT_TOKEN` (a chave `phc_…` do projeto) e, se o projeto for na
   região da Europa, `VITE_POSTHOG_HOST=https://eu.i.posthog.com`. Na Vercel, em Settings → Environment
   Variables; localmente, num `.env.local`. Sem a chave nada é carregado. A biblioteca é baixada à parte,
   depois do app. Além de pageviews e cliques (automáticos), o app envia o evento `ficha_aberta`
