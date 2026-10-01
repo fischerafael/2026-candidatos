@@ -47,6 +47,29 @@ Há também ajustes editoriais do projeto, em `BAND_OVERRIDE`, que prevalecem so
 são sinalizados na ficha do candidato: PSOL como esquerda (a nota 1,41 o colocaria em extrema
 esquerda) e Missão, que não está no survey, como extrema direita.
 
+## Patrimônio declarado
+
+A declaração de bens vem do conjunto "Bens de candidatos" do TSE. O repositório já traz os arquivos
+gerados. Para atualizar:
+
+```bash
+npm run bens                 # baixa bem_candidato_2026.zip do TSE (cache em .cache/, --force para baixar de novo)
+npm run bens -- --zip ~/Downloads/bem_candidato_2026.zip
+```
+
+Gera `public/data/patrimonio.json`, um resumo por candidato (total, grupos de bens e número de bens),
+carregado junto com o app, e `public/data/bens/<UF>.json`, a lista de bens, baixada só quando
+alguém abre a ficha de um candidato daquele estado. Com isso aparecem os filtros **Patrimônio
+declarado** (faixas) e **Declarou ter** (imóveis, veículos, embarcações e aeronaves, participação em
+empresas etc.; os grupos estão em `scripts/fetch-bens.mjs`), as ordens por maior e menor patrimônio,
+o gráfico no panorama e a lista de bens na ficha. Sem esses arquivos o app funciona normalmente,
+só que sem essas opções.
+
+Cuidados: os valores são os declarados pelo candidato, em geral pelo custo de aquisição (regra do
+Imposto de Renda), e não o valor de mercado. Um terço dos candidatos não declarou bens, o que não
+quer dizer que não tenha. Erros de digitação da declaração aparecem como estão no TSE. Nas
+descrições, números longos (CNPJ, CPF, conta, matrícula, CEP) são trocados por "•••".
+
 ## Fotos dos candidatos
 
 O TSE publica as fotos num zip por estado. O script baixa, extrai e renomeia cada foto
@@ -96,6 +119,8 @@ Gera a pasta `dist/`, que pode ir para qualquer hospedagem estática:
 ```
 scripts/prepare-data.mjs     CSV do TSE → public/data/candidatos.json
 scripts/fetch-photos.mjs     zips de fotos do TSE → public/fotos/
+scripts/fetch-bens.mjs       bens declarados (TSE) → public/data/patrimonio.json e public/data/bens/
+scripts/lib/tse-csv.mjs      leitura dos CSVs do TSE, compartilhada pelos scripts
 src/App.jsx                  estado dos filtros e composição da página
 src/lib/constants.js         categorias, ordens, rótulos e posições das colunas
 src/lib/data.js              carregamento do JSON e índice de busca

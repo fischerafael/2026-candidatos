@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "prepare-data": "node scripts/prepare-data.mjs",
     "fotos": "node scripts/fetch-photos.mjs",
+    "bens": "node scripts/fetch-bens.mjs",
     "build:vercel": "npm run fotos -- all || echo 'Aviso: fotos do TSE incompletas, seguindo o build'; vite build"
   },
   "dependencies": {

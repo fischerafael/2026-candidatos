@@ -1,3 +1,5 @@
+import { WEALTH_NOTE } from './patrimonio.js';
+
 // Posições fixas de cada campo dentro de uma linha do JSON (ver scripts/prepare-data.mjs)
 export const COL = { num: 0, urna: 1, nome: 2, social: 3, age: 4, nasc: 5, colig: 17, comp: 18, ue: 19, sq: 20 };
 export const FACET_START = 6; // a partir daqui vêm os índices categóricos, na ordem de data.keys
@@ -29,12 +31,15 @@ export const SHORT = {
   'Deputado distrital': 'Dep. distrital',
 };
 
+// Facetas que dependem de arquivos opcionais (patrim, bens) só aparecem se os dados existirem.
 // type: lista (padrão) | uf | chips | search | age
 export const FACETS = [
   { k: 'cargo', label: 'Cargo', open: true },
   { k: 'uf', label: 'Estado', open: true, type: 'uf' },
   { k: 'partido', label: 'Partido', open: true, type: 'chips', sortByCount: true },
   { k: 'espectro', label: 'Espectro do partido', open: true, type: 'ideology' },
+  { k: 'patrim', label: 'Patrimônio declarado', note: WEALTH_NOTE },
+  { k: 'bens', label: 'Declarou ter', note: 'Marcando mais de uma opção, aparece quem tem qualquer uma delas.' },
   { k: 'fed', label: 'Federação' },
   { k: 'genero', label: 'Gênero' },
   { k: 'raca', label: 'Cor/raça' },
@@ -57,6 +62,8 @@ export const SORTS = [
   ['urna', 'Nome de urna (A–Z)'],
   ['young', 'Mais jovens primeiro'],
   ['old', 'Mais velhos primeiro'],
+  ['rich', 'Maior patrimônio'],
+  ['poor', 'Menor patrimônio'],
   ['num', 'Número'],
   ['partido', 'Partido'],
   ['uf', 'Estado'],

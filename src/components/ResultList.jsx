@@ -1,6 +1,7 @@
 import { PAGE_STEP, SORTS, UF_NAME } from '../lib/constants.js';
 import { useData } from '../lib/data.js';
 import { fmt } from '../lib/format.js';
+import { money } from '../lib/patrimonio.js';
 import Digits from './Digits.jsx';
 import Photo from './Photo.jsx';
 
@@ -8,6 +9,7 @@ export default function ResultList({
   sorted, limit, setLimit, sort, setSort, onOpen, clearAll,
   view, setView, onlyPhoto, setOnlyPhoto, hasPhotos,
 }) {
+  const hasWealth = !!useData().wealth;
   const remaining = sorted.length - limit;
   const Item = view === 'grid' ? Card : Row;
   return (
@@ -28,7 +30,8 @@ export default function ResultList({
           <label>
             <span className="sr-only">Ordenar por</span>
             <select className="sel" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Ordenar por">
-              {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {SORTS.filter(([v]) => hasWealth || (v !== 'rich' && v !== 'poor'))
+                .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </label>
         </div>
@@ -56,19 +59,21 @@ export default function ResultList({
 }
 
 function useRow(r) {
-  const { rows, dicts, fi } = useData();
+  const { rows, dicts, fi, wealth } = useData();
   const row = rows[r];
+  const w = wealth?.[r];
   const uf = dicts.uf[row[fi.uf]];
   return {
     row,
     cargo: dicts.cargo[row[fi.cargo]],
     partido: dicts.partido[row[fi.partido]],
     place: UF_NAME[uf] || uf,
+    patrim: w ? money(w[0]) : '',
   };
 }
 
 function Row({ r, onOpen }) {
-  const { row, cargo, partido, place } = useRow(r);
+  const { row, cargo, partido, place, patrim } = useRow(r);
   return (
     <button className="row" onClick={onOpen}>
       <Photo sq={row[20]} name={row[1]} className="sm" />
@@ -81,6 +86,7 @@ function Row({ r, onOpen }) {
       <div className="side">
         <span className="pill">{partido}</span>
         <b>{row[4] >= 0 ? `${row[4]} anos` : ''}</b>
+        {patrim && <span className="patrim" title="Patrimônio declarado">{patrim}</span>}
       </div>
     </button>
   );

@@ -3,12 +3,13 @@ import { COL, UF_NAME } from '../lib/constants.js';
 import { useData } from '../lib/data.js';
 import { fmt, norm } from '../lib/format.js';
 import { scoreLabel } from '../lib/ideology.js';
+import Bens from './Bens.jsx';
 import Digits from './Digits.jsx';
 import Photo from './Photo.jsx';
 
 // Ficha do candidato, inspirada na tela e no teclado da urna eletrônica
 export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext }) {
-  const { rows, dicts, fi, party } = useData();
+  const { rows, dicts, fi, party, wealth } = useData();
   const row = rows[r];
   const g = (k) => dicts[k][row[fi[k]]];
   const closeRef = useRef(null);
@@ -73,6 +74,12 @@ export default function CandidateDrawer({ r, pos, total, onClose, onPrev, onNext
             </div>
             {row[COL.comp] && <div className="wide"><dt>Composição</dt><dd style={{ fontSize: 13 }}>{row[COL.comp]}</dd></div>}
           </dl>
+          {wealth && (
+            <>
+              <hr />
+              <Bens sq={row[COL.sq]} uf={uf} summary={wealth[r]} />
+            </>
+          )}
         </div>
         <div className="keys">
           <button className="key k-w" onClick={onPrev} disabled={pos === 0}>Anterior</button>

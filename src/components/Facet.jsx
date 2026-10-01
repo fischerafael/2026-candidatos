@@ -32,6 +32,9 @@ export default function Facet({ f, sel, counts, toggle, amin, amax, setAmin, set
     } else {
       body = <CheckboxList f={f} idx={idx} d={d} sel={sel} counts={counts} toggle={toggle} />;
     }
+    if (f.note) {
+      body = <>{body}<p className="fnote">{f.note}</p></>;
+    }
     if (f.type === 'ideology') {
       body = (
         <>

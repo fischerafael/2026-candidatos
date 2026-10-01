@@ -10,13 +10,17 @@ const bucketOf = (age) => AGE_BUCKETS.findIndex(([a, b]) => age >= a && age <= b
  * mostra quantos resultados haveria ao marcar aquela opção.
  * Uma única passada sobre os dados: se a linha falha em 0 filtros, entra no resultado
  * e soma em todas as categorias; se falha em exatamente 1, soma só nessa categoria.
+ * Categorias em data.multi (ex.: tipos de bem) guardam uma máscara de bits por linha: a linha
+ * passa se tiver qualquer uma das opções marcadas e soma em todas as opções que tiver.
  */
 export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
   return useMemo(() => {
-    const { rows, keys, dicts, fi, search, photos } = data;
+    const { rows, keys, dicts, fi, search, photos, multi } = data;
     const needPhoto = onlyPhoto && photos.size > 0;
     const terms = norm(q.trim()).split(/\s+/).filter(Boolean);
-    const active = keys.filter((k) => sel[k]?.length).map((k) => ({ k, col: fi[k], set: new Set(sel[k]) }));
+    const active = keys.filter((k) => sel[k]?.length).map((k) => ({
+      k, col: fi[k], set: new Set(sel[k]), mask: multi[k] ? sel[k].reduce((m, i) => m | (1 << i), 0) : 0,
+    }));
     const lo = amin === '' ? -Infinity : Number(amin);
     const hi = amax === '' ? Infinity : Number(amax);
     const ageOn = amin !== '' || amax !== '';
@@ -24,6 +28,10 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
     const counts = Object.fromEntries(keys.map((k) => [k, new Uint32Array(dicts[k].length)]));
     const ageCounts = new Uint32Array(AGE_BUCKETS.length);
     const ids = [];
+    const add = (k, v) => {
+      if (!multi[k]) { counts[k][v]++; return; }
+      for (let b = 0; v >> b; b++) if ((v >> b) & 1) counts[k][b]++;
+    };
 
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
@@ -33,7 +41,8 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
       let fails = 0;
       let failK = null;
       for (const a of active) {
-        if (!a.set.has(row[a.col])) { fails++; failK = a.k; if (fails > 1) break; }
+        const v = row[a.col];
+        if (a.mask ? !(v & a.mask) : !a.set.has(v)) { fails++; failK = a.k; if (fails > 1) break; }
       }
       if (fails > 1) continue;
 
@@ -46,9 +55,9 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
         if (b >= 0) ageCounts[b]++;
         if (ageFail) continue;
         ids.push(r);
-        for (const k of keys) counts[k][row[fi[k]]]++;
+        for (const k of keys) add(k, row[fi[k]]);
       } else {
-        counts[failK][row[fi[failK]]]++;
+        add(failK, row[fi[failK]]);
       }
     }
     return { ids, counts, ageCounts };
@@ -57,7 +66,14 @@ export function useFilteredData(data, { q, sel, amin, amax, onlyPhoto }) {
 
 export function useSorted(data, ids, sort) {
   return useMemo(() => {
-    const { rows, dicts, fi } = data;
+    const { rows, dicts, fi, wealth } = data;
+    // quem não declarou bens fica no fim nas duas ordens de patrimônio
+    const total = (r) => wealth?.[r]?.[0];
+    const byWealth = (dir) => (x, y) => {
+      const a = total(x), b = total(y);
+      if (a === undefined || b === undefined) return (a === undefined) - (b === undefined) || byName(x, y);
+      return dir * (a - b) || byName(x, y);
+    };
     const coll = new Intl.Collator('pt-BR');
     const byName = (x, y) => coll.compare(rows[x][1], rows[y][1]);
     const comparators = {
@@ -66,6 +82,8 @@ export function useSorted(data, ids, sort) {
       old: (x, y) => rows[y][4] - rows[x][4] || byName(x, y),
       num: (x, y) => rows[x][0] - rows[y][0],
       partido: (x, y) => coll.compare(dicts.partido[rows[x][fi.partido]], dicts.partido[rows[y][fi.partido]]) || byName(x, y),
+      rich: byWealth(-1),
+      poor: byWealth(1),
       uf: (x, y) => coll.compare(dicts.uf[rows[x][fi.uf]], dicts.uf[rows[y][fi.uf]]) || byName(x, y),
     };
     return ids.slice().sort(comparators[sort] || byName);

@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fixDashes, readTseCsv } from './lib/tse-csv.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const input = process.argv[2];
@@ -14,27 +15,7 @@ if (!input) {
 }
 const ELECTION_DATE = new Date(2026, 9, 4); // 4 de outubro de 2026
 
-// --- CSV (separador ";", campos entre aspas, arquivo em Latin-1)
-const text = new TextDecoder('latin1').decode(readFileSync(input));
-function parseCsv(src) {
-  const rows = [];
-  let row = [], field = '', q = false;
-  for (let i = 0; i < src.length; i++) {
-    const c = src[i];
-    if (q) {
-      if (c === '"') { if (src[i + 1] === '"') { field += '"'; i++; } else q = false; }
-      else field += c;
-    } else if (c === '"') q = true;
-    else if (c === ';') { row.push(field); field = ''; }
-    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-    else if (c !== '\r') field += c;
-  }
-  if (field || row.length) { row.push(field); rows.push(row); }
-  return rows;
-}
-const [header, ...body] = parseCsv(text);
-const col = Object.fromEntries(header.map((h, i) => [h, i]));
-const get = (r, name) => r[col[name]] ?? '';
+const { rows: body, get } = readTseCsv(readFileSync(input));
 
 // --- normalização de texto
 const EMPTY = new Set(['#NULO', '#NE', '']);
@@ -42,7 +23,7 @@ const LOWER = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'di', 'du', 'del', '
 const capFirstLetter = (p) => p.replace(/^([^\p{L}]*)(\p{L})/u, (_, a, b) => a + b.toUpperCase());
 function titleCase(s) {
   if (EMPTY.has(s)) return '';
-  return s.toLowerCase().split(/\s+/).filter(Boolean).map((w, i) => {
+  return fixDashes(s).toLowerCase().split(/\s+/).filter(Boolean).map((w, i) => {
     if (i > 0 && LOWER.has(w)) return w;
     if (['ii', 'iii', 'iv'].includes(w)) return w.toUpperCase();
     return w.split('-').map(capFirstLetter).join('-');
@@ -83,7 +64,7 @@ const FACETS = {
   ufnasc: (r) => nullable(get(r, 'SG_UF_NASCIMENTO')),
 };
 const keys = Object.keys(FACETS);
-const raw = body.filter((r) => r.length >= header.length).map((r) => keys.map((k) => FACETS[k](r)));
+const raw = body.map((r) => keys.map((k) => FACETS[k](r)));
 const dicts = {};
 const index = {};
 keys.forEach((k, j) => {
@@ -92,7 +73,7 @@ keys.forEach((k, j) => {
 });
 
 const party = {};
-const rows = body.filter((r) => r.length >= header.length).map((r, n) => {
+const rows = body.map((r, n) => {
   party[get(r, 'SG_PARTIDO')] = titleCase(get(r, 'NM_PARTIDO'));
   const social = get(r, 'NM_SOCIAL_CANDIDATO');
   const agrem = get(r, 'TP_AGREMIACAO');

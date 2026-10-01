@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { FACET_START, ORDER } from './constants.js';
+import { COL, FACET_START, ORDER } from './constants.js';
 import { norm } from './format.js';
 import { BANDS, bandOf, NO_BAND } from './ideology.js';
+import { WEALTH_LABELS, wealthBand } from './patrimonio.js';
 
 const DataContext = createContext(null);
 export const DataProvider = DataContext.Provider;
@@ -13,18 +14,22 @@ export function useCandidatosData() {
   useEffect(() => {
     let alive = true;
     Promise.all([
-      fetch(`${import.meta.env.BASE_URL}data/candidatos.json`).then((r) => {
+      fetch(`${DATA_BASE}candidatos.json`).then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       }),
       loadPhotoIndex(),
+      loadOptional(`${DATA_BASE}patrimonio.json`),
     ])
-      .then(([raw, photos]) => alive && setState({ status: 'ready', data: enrich(raw, photos), error: null }))
+      .then(([raw, photos, wealth]) => alive && setState({ status: 'ready', data: enrich(raw, photos, wealth), error: null }))
       .catch((error) => alive && setState({ status: 'error', data: null, error }));
     return () => { alive = false; };
   }, []);
   return state;
 }
+
+const DATA_BASE = `${import.meta.env.BASE_URL}data/`;
+const loadOptional = (url) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
 // Fotos: por padrão em public/fotos (geradas por `npm run fotos`). Para servir de um bucket/CDN
 // externo, defina VITE_PHOTO_BASE_URL (com barra no final) no build.
@@ -39,23 +44,54 @@ function loadPhotoIndex() {
     .catch(() => new Set());
 }
 
-function enrich(raw, photos) {
+// Lista de bens de um estado (public/data/bens/<UF>.json), baixada só quando alguém abre uma ficha
+const bensCache = new Map();
+export function loadBens(uf) {
+  if (!bensCache.has(uf)) {
+    bensCache.set(uf, fetch(`${DATA_BASE}bens/${uf}.json`).then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).catch((e) => { bensCache.delete(uf); throw e; }));
+  }
+  return bensCache.get(uf);
+}
+
+function enrich(raw, photos, wealthJson) {
   const fi = {};
   raw.keys.forEach((k, i) => { fi[k] = FACET_START + i; });
   const search = raw.rows.map((r) => norm(`${r[1]} ${r[2]} ${r[3]} ${r[0]}`));
-  const { keys, dicts } = addEspectro(raw, fi);
-  return { ...raw, keys, dicts, fi, search, photos };
+  const data = { ...raw, keys: [...raw.keys], dicts: { ...raw.dicts }, fi, search, photos, multi: {} };
+
+  // Espectro: derivado do partido (ver ideology.js)
+  const espectro = [...BANDS.map(([, l]) => l), NO_BAND];
+  const pos = new Map(espectro.map((l, i) => [l, i]));
+  const byParty = raw.dicts.partido.map((sg) => pos.get(bandOf(sg)));
+  addFacet(data, 'espectro', espectro, (r) => byParty[r[fi.partido]], true);
+
+  // Patrimônio: resumo [total, máscara de grupos, nº de bens] por SQ_CANDIDATO (ver fetch-bens.mjs)
+  if (wealthJson) {
+    const c = wealthJson.c;
+    data.wealth = raw.rows.map((r) => c[r[COL.sq]] ?? null);
+    data.wealthGen = wealthJson.gen;
+    addFacet(data, 'patrim', WEALTH_LABELS, (r, i) => wealthBand(data.wealth[i]?.[0] ?? -1));
+    addFacet(data, 'bens', wealthJson.groups, (r, i) => data.wealth[i]?.[1] ?? 0);
+    data.multi.bens = true;
+  }
+  return data;
 }
 
-// Faceta derivada do partido (ver ideology.js): vira uma coluna extra no fim de cada linha
-function addEspectro(raw, fi) {
-  const labels = [...BANDS.map(([, l]) => l), NO_BAND];
-  const pos = new Map(labels.map((l, i) => [l, i]));
-  const byParty = raw.dicts.partido.map((sg) => pos.get(bandOf(sg)));
-  const col = raw.rows[0]?.length ?? 0;
-  for (const r of raw.rows) r[col] = byParty[r[fi.partido]];
-  fi.espectro = col;
-  return { keys: [...raw.keys, 'espectro'], dicts: { ...raw.dicts, espectro: labels } };
+// Faceta derivada: vira uma coluna extra no fim de cada linha. Com dropLastIfEmpty, o último rótulo
+// (ex.: "Sem classificação") some quando nenhuma linha cai nele.
+function addFacet(data, k, labels, valueOf, dropLastIfEmpty = false) {
+  const col = data.rows[0]?.length ?? 0;
+  let usedLast = false;
+  data.rows.forEach((r, i) => {
+    r[col] = valueOf(r, i);
+    if (r[col] === labels.length - 1) usedLast = true;
+  });
+  data.fi[k] = col;
+  data.keys.push(k);
+  data.dicts[k] = dropLastIfEmpty && !usedLast ? labels.slice(0, -1) : labels;
 }
 
 // Índices de um dicionário na ordem de exibição (sem valores vazios)
